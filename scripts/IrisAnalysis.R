@@ -1,16 +1,17 @@
+# include the functions.R file holding customised functions
 source('scripts\\includes\\functions.R', chdir = TRUE)
 
+
 addPackage("neuralnet")
-
 install.packages("neuralnet")
-
 library("neuralnet")
 
 
-
+# predict Iris species using the original Iris dataset and return the prediction
 irisPrediction <- predictIrisSpecies(iris)
 
-# irisPrediction
+# predict a user observation inputting 4 values (currently user can input a 
+# data frame of any number of obserations, not just 1 observation) and predicting the Iris type
 
 Sepal_Length <- 5.9
 Sepal_Width <- 3.0
