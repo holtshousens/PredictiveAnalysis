@@ -99,12 +99,12 @@ predictIrisSpeciesUser <- function(sourcedata)
   # so that we dont have train multiple times / every time a user submits
   # a new observation to predict
   
-  nn <- neuralnet(setosa + versicolor + virginica ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, iris, hidden=3,lifesign = "full")
+  nn <- neuralnet::neuralnet(setosa + versicolor + virginica ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, iris, hidden=3,lifesign = "full")
   
-  predict <- compute(nn, sourcedata[1:4])
+  predict <- neuralnet::compute(nn, sourcedata[1:4])
   
   result <- 0
-  
+
   result[1] <- which.max(predict$net.result[1,])
   
   if (result==1) { result = "setosa"}
@@ -116,4 +116,19 @@ predictIrisSpeciesUser <- function(sourcedata)
   comparison$Predicted <- result
   
   return(comparison)
+}
+
+sendResultsToSQL <- function(results)
+{
+  addPackage("RODBC")
+  
+  connection <- RODBC::odbcConnect("LOCALHOST")
+  
+  tableName <- "dbo.iris"
+  
+  try(RODBC::sqlDrop(connection, tableName, errors = FALSE), silent = TRUE)
+  
+  sqlSave(connection, results)
+  
+  RODBC::odbcClose(connection)
 }
