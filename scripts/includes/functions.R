@@ -18,17 +18,26 @@ predictIrisSpecies <- function(sourcedata)
 {
   # irisData <- iris[sample(1:150, 50),]
   # trainingSet <- irisData
+  # sourcedata <- iris
   
   # create copy of the iris DF
   trainingSet <- sourcedata
-  
+   
   # create a TRUE/FALSE column for each Species for our prediction
-  trainingSet$setosa <- c(trainingSet$Species == 'setosa')
-  trainingSet$versicolor <- c(trainingSet$Species == 'versicolor')
-  trainingSet$virginica <- c(trainingSet$Species == 'virginica')
+
+  species <- as.character(unique(trainingSet$Species))
   
+  noSpecies <- NROW(species)
+   
+  for (i in 1:noSpecies)
+  {
+    specie <- species[i]
+    trainingSet[,paste(specie)] <- c(trainingSet$Species == specie)
+  }
+
   # trainingSet
   
+  # Remove original Species column
   trainingSet$Species <- NULL
   
   # train data using neural networks
@@ -41,34 +50,58 @@ predictIrisSpecies <- function(sourcedata)
   # predict the species using the original Iris data
   predict <- compute(nn, iris[1:4])
   
-  # predict
+  # NROW(predict$net.result)
   
-  # make round numbers
+  # make round numbers & replace with string prediction
+  
   result <- 0
   
-  for (i in 1:150) { result[i] <- which.max(predict$net.result[i,]) }
+  noRows <- NROW(predict$net.result)
   
-  # result
+  for (i in 1:noRows) 
+  { 
+    result[i] <- which.max(predict$net.result[i,]) 
+    
+    if (result[i] == 1) 
+    { 
+      result[i] = species[1]
+    }
+    else if (result[i] == 2)
+    {
+      result[i] = species[2]
+    }
+    else if (result[i] == 3)
+    {
+      result[i] = species[3]
+    }
+  }
   
-  for (i in 1:150) { if (result[i]==1) { result[i] = "setosa"}}
-  for (i in 1:150) { if (result[i]==2) {result[i] = "versicolor"} }
-  for (i in 1:150) { if (result[i]==3) {result[i] = "virginica"} }
-  
-  comparison <- iris
+  # create new data frame with sourcedata
+
+  comparison <- sourcedata
   
   # add column with our predicted values
   comparison$Predicted <- result
   
-  # comparison
+  # return the comparison data frame
   
   return(comparison)
 }
+
 
 predictIrisSpeciesUser <- function(sourcedata)
 {
   #accepting user input:
   
-  predict <- compute(nn, userobs[1:4])
+  # need to retrain the neuralnet using the iris data.
+  # still to do:
+  # remove the training of the dataset into a seperate function rather
+  # so that we dont have train multiple times / every time a user submits
+  # a new observation to predict
+  
+  nn <- neuralnet(setosa + versicolor + virginica ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, iris, hidden=3,lifesign = "full")
+  
+  predict <- compute(nn, sourcedata[1:4])
   
   result <- 0
   
@@ -78,7 +111,7 @@ predictIrisSpeciesUser <- function(sourcedata)
   if (result==2) {result = "versicolor"}
   if (result==3) {result = "virginica"}
   
-  comparison <- userobs
+  comparison <- sourcedata
   
   comparison$Predicted <- result
   
